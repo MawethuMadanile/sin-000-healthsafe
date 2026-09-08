@@ -40,7 +40,6 @@ public class WardCsvCleaner {
             }
 
              if (byId.containsKey(id)) {
-                // duplicate — keep the first occurrence, note it on the kept record
                 Ward existing = byId.get(id);
                 String dupNote = "duplicate entry also seen (wing='" + wing + "', dept='" + department
                         + "', beds='" + rawBeds.trim() + "')";
@@ -55,7 +54,6 @@ public class WardCsvCleaner {
     }
 
     private String normalizeText(String s) {
-        // trim, collapse internal double spaces to one
         return s.trim().replaceAll("\\s+", " ");
     }
 
@@ -80,10 +78,10 @@ public class WardCsvCleaner {
         if (isPlaceholder(v)) return null;
         try {
             int n = Integer.parseInt(v);
-            if (n < 0) return null; // negative counts are invalid
+            if (n < 0) return null;
             return n;
         } catch (NumberFormatException e) {
-            return null; // e.g. "five", "full"
+            return null; 
         }
     }
 }

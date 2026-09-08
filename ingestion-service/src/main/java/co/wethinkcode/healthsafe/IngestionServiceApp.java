@@ -2,6 +2,9 @@ package co.wethinkcode.healthsafe;
 
 import io.javalin.Javalin;
 
+import java.nio.file.Path;
+import java.util.List;
+
 public class IngestionServiceApp {
 
     public static void main(String[] args) {
@@ -9,8 +12,10 @@ public class IngestionServiceApp {
 
         app.get("/health", ctx -> ctx.result("OK"));
 
-        // TODO: read and clean src/main/resources/wards-outdated.csv (wards, wings, specialist departments data —
-        // trim whitespace, fix casing, normalize dates/booleans) and expose the
-        // cleaned records here for the other services to consume.
+        app.get("/wards", ctx -> {
+            Path cvsPath = Path.of("src/main/resources/wards-outdated.cvs");
+            List<Ward> wards = new WardCsvCleaner().clean(cvsPath);
+            ctx.json(wards);
+        });
     }
 }
