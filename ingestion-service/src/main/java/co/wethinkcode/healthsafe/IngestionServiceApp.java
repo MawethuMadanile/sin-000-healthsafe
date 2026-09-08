@@ -1,9 +1,9 @@
 package co.wethinkcode.healthsafe;
 
-import io.javalin.Javalin;
-
 import java.nio.file.Path;
 import java.util.List;
+
+import io.javalin.Javalin;
 
 public class IngestionServiceApp {
 
@@ -13,7 +13,7 @@ public class IngestionServiceApp {
         app.get("/health", ctx -> ctx.result("OK"));
 
         app.get("/wards", ctx -> {
-            Path cvsPath = Path.of("src/main/resources/wards-outdated.cvs");
+            Path cvsPath = Path.of("src/main/resources/wards-outdated.csv");
             List<Ward> wards = new WardCsvCleaner().clean(cvsPath);
             ctx.json(wards);
         });
