@@ -1,18 +1,37 @@
 package co.wethinkcode.healthsafe;
 
+import java.util.List;
+import java.util.Optional;
+
 import io.javalin.Javalin;
+import io.javalin.http.NotFoundResponse;
 
 public class WardServiceApp {
 
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7031);
+        WardClient wardClient = new WardClient();
 
         app.get("/health", ctx -> ctx.result("OK"));
 
-        // TODO (Provides lists of wards and departments.)
-        // Add domain endpoints for ward-service here.
+        app.get("/wards", ctx -> {
+            List<Ward> wards = wardClient.fetchWards();
+            ctx.json(wards);
+        });
+
+        app.get("/wards/{id}", ctx -> {
+            String id = ctx.pathParam("id").toUpperCase();
+            List<Ward> wards = wardClient.fetchWards();
+
+            Optional<Ward> match = wards.stream()
+                    .filter(w -> w.wardId.equalsIgnoreCase(id))
+                    .findFirst();
+
+            if (match.isEmpty()) {
+                throw new NotFoundResponse("No ward found with id " + id);
+            }
+            ctx.json(match.get());
+        });
     }
 }
 
-// MQ TODO: subscribes to ActiveMQ topic MqConfig.TOPIC at MqConfig.BROKER_URL (see co.wethinkcode.healthsafe.mq.MqConfig)
-// MQ TODO: publishes to ActiveMQ queue MqConfig.QUEUE when it detects an equipment failure on one of its wards.
