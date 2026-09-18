@@ -12,6 +12,8 @@ public class WardServiceApp {
         Javalin app = Javalin.create().start(7031);
         WardClient wardClient = new WardClient();
 
+        new StaffingEventSubscriber().start();
+        
         app.get("/health", ctx -> ctx.result("OK"));
 
         app.get("/wards", ctx -> {

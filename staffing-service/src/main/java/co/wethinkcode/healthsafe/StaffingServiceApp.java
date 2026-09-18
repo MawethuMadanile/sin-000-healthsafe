@@ -11,6 +11,7 @@ public class StaffingServiceApp {
 
         WardServiceClient wardServiceClient = new WardServiceClient();
         AlertLevelServiceClient alertLevelServiceClient = new AlertLevelServiceClient();
+        StaffingEventPublisher eventPublisher = new StaffingEventPublisher();
 
         app.get("/health", ctx -> ctx.result("OK"));
 
@@ -25,7 +26,10 @@ public class StaffingServiceApp {
             int alertLevel = alertLevelServiceClient.fetchAlertLevel();
             int doctorsOnCall = 1 + (alertLevel / 2);
 
-            ctx.json(new Schedule(ward.get(), alertLevel, doctorsOnCall));
+            Schedule schedule = new Schedule(ward.get(), alertLevel, doctorsOnCall);
+            eventPublisher.publish(schedule);
+
+            ctx.json(schedule);
         });
     }
 }
