@@ -1,17 +1,32 @@
 package co.wethinkcode.healthsafe;
 
 import io.javalin.Javalin;
+import java.util.Optional;
+import io.javalin.http.NotFoundResponse;
 
 public class StaffingServiceApp {
 
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7033);
 
+        WardServiceClient wardServiceClient = new WardServiceClient();
+        AlertLevelServiceClient alertLevelServiceClient = new AlertLevelServiceClient();
+
         app.get("/health", ctx -> ctx.result("OK"));
 
-        // TODO (Provides on-call schedules for doctors based on ward and status.)
-        // Add domain endpoints for staffing-service here.
+        app.get("/schedule/{wardId}", ctx -> { 
+            String wardId = ctx.pathParam("wardId");
+
+            Optional<Ward> ward = wardServiceClient.fetchWard(wardId);
+            if(ward.isEmpty()){
+                throw new NotFoundResponse("No ward found with id " + wardId);
+            }
+
+            int alertLevel = alertLevelServiceClient.fetchAlertLevel();
+            int doctorsOnCall = 1 + (alertLevel / 2);
+
+            ctx.json(new Schedule(ward.get(), alertLevel, doctorsOnCall));
+        });
     }
 }
 
-// MQ TODO: publishes to ActiveMQ topic MqConfig.TOPIC at MqConfig.BROKER_URL (see co.wethinkcode.healthsafe.mq.MqConfig)

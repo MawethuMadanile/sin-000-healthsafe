@@ -14,14 +14,14 @@ public class AlertLevelServiceApp {
 
         app.get("/health", ctx -> ctx.result("OK"));
 
-        app.get("/alert-Level", ctx -> {
+        app.get("/alert-level", ctx -> {
             ctx.json(new AlertLevel(alertLevel.get()));
         });
 
         app.put("/alert-level", ctx -> {
             AlertLevel body = ctx.bodyAsClass(AlertLevel.class);
             if (body.level < 0 || body.level > 8) {
-                throw new BadRequestResponse("level must be between ) and 8");
+                throw new BadRequestResponse("level must be between 0 and 8");
             }
             alertLevel.set(body.level);
             ctx.json(new AlertLevel(alertLevel.get()));
