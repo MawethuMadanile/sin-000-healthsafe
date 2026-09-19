@@ -2,7 +2,7 @@ package co.wethinkcode.healthsafe;
 
 import java.util.List;
 import java.util.Optional;
-
+import io.javalin.http.InternalServerErrorResponse;
 import io.javalin.Javalin;
 import io.javalin.http.NotFoundResponse;
 
@@ -11,7 +11,7 @@ public class WardServiceApp {
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7031);
         WardClient wardClient = new WardClient();
-
+        EquipmentFailurePublisher equipmentFailurePublisher = new EquipmentFailurePublisher();
         new StaffingEventSubscriber().start();
         
         app.get("/health", ctx -> ctx.result("OK"));
@@ -33,6 +33,19 @@ public class WardServiceApp {
                 throw new NotFoundResponse("No ward found with id " + id);
             }
             ctx.json(match.get());
+        });
+
+        app.post("/wards/{id}/equipment-failure", ctx -> {
+            String id = ctx.pathParam("id").toUpperCase();
+            EquipmentFailure body = ctx.bodyAsClass(EquipmentFailure.class);
+            body.wardId = id;
+
+            try {
+                equipmentFailurePublisher.publish(body);
+            } catch (Exception e) {
+                throw new InternalServerErrorResponse("Failed to publish equipment failure: " + e.getMessage());
+            }
+            ctx.status(202).json(body);
         });
     }
 }
